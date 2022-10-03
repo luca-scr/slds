@@ -1,15 +1,15 @@
-#' @name ceSummary
-#' @aliases ceSummary
+#' @name mclassSummary
+#' @aliases mclassSummary
 #' 
-#' @title Classification error and Brier score performance measures across resamples
+#' @title Classification error, logLoss, and Brier score performance measures across resamples
 #' 
-#' @description Calculates classification error and Brier score measures
-#' for evaluating a multi-class classifier output quality.  
+#' @description Calculates classification error, logLoss, and Brier score
+#' measures for evaluating a multi-class classifier output quality.  
 #' This function can be used in \code{\link[caret]{train}()} function for 
 #' selecting the hyperparameter(s) of a classifier. This can be achieved by
-#' specifying the argument \code{metric} in \code{train()} function call, and
-#' \code{summaryFunction = ceSummary} and \code{classProbs = TRUE}
-#' in \code{\link[caret]{trainControl}}. 
+#' specifying the argument \code{metric} with \code{maximize = FALSE} in
+#' \code{train()} function call, and \code{summaryFunction = mclassSummary}
+#' with \code{classProbs = TRUE} in \code{\link[caret]{trainControl}}. 
 #' See examples below.
 #'
 #' @param data	a data frame with columns \code{obs} and \code{pred} for the 
@@ -34,19 +34,19 @@
 #' mod1 = train(Class ~ . , data = data,
 #'              method = "rpart2",
 #'              tuneGrid = expand.grid(maxdepth = 1:10),
-#'              metric = "ClassError",
+#'              metric = "logLoss",
 #'              maximize = FALSE,
 #'              trControl = trainControl(method = "cv", number = 10,
 #'                                       classProbs = TRUE,
-#'                                       summaryFunction = ceSummary,
+#'                                       summaryFunction = mclassSummary,
 #'                                       selectionFunction = "best") )
 #' mod1
 #' ggplot(mod1) +
 #'   scale_x_continuous(breaks = mod1$results$maxdepth) +
-#'   geom_errorbar(aes(ymin = with(mod1$results, ClassError - ClassErrorSD/sqrt(10)),
-#'                     ymax = with(mod1$results, ClassError + ClassErrorSD/sqrt(10))),
+#'   geom_errorbar(aes(ymin = with(mod1$results, logLoss - logLossSD/sqrt(10)),
+#'                     ymax = with(mod1$results, logLoss + logLossSD/sqrt(10))),
 #'                 width = 0.3)
-#' 
+#'                 
 #' mod2 = train(Class ~ . , data = data,
 #'              method = "rpart2",
 #'              tuneGrid = expand.grid(maxdepth = 1:10),
@@ -54,7 +54,7 @@
 #'              maximize = FALSE,
 #'              trControl = trainControl(method = "cv", number = 10,
 #'                                       classProbs = TRUE,
-#'                                       summaryFunction = ceSummary,
+#'                                       summaryFunction = mclassSummary,
 #'                                       selectionFunction = "best") )
 #' mod2
 #' ggplot(mod2) +
@@ -63,10 +63,10 @@
 #'                     ymax = with(mod2$results, BrierScore + BrierScoreSD/sqrt(10))),
 #'                 width = 0.3)
 #' 
-#' @importFrom ModelMetrics ce brier
+#' @importFrom ModelMetrics ce mlogLoss brier
 #' @export
 
-ceSummary <- function(data, lev = NULL, model = NULL, ...) 
+mclassSummary <- function(data, lev = NULL, model = NULL, ...) 
 {
   requireNamespace("ModelMetrics")
   if(!all(levels(data[, "pred"]) == levels(data[, "obs"]))) 
@@ -79,9 +79,10 @@ ceSummary <- function(data, lev = NULL, model = NULL, ...)
                                function(x) ifelse(data[,"obs"] == x, 1, 0)))
   prob <- do.call("cbind", lapply(levels(data[, "pred"]), 
                                   function(x) data[, x]))
-
   c(ClassError = ModelMetrics::ce(actual = data$obs, 
                                   predicted = data$pred),
+    logLoss = ModelMetrics::mlogLoss(actual = data$obs, 
+                                     predicted = prob),
     BrierScore = ModelMetrics::brier(actual = obs, 
                                      predicted = prob))
 }
