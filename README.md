@@ -2,8 +2,6 @@
 
 ## Description
 
-An R package accompanying the courses "Statistical Learning for Data Science" and "Statistical Methods for Data Science"
-
 A meta-package for R accompanying the courses *Statistical Learning for Data Science* and *Statistical Methods for Data Science* at Università degli Studi di Perugia, Italy.
 
 ## Installation
