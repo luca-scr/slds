@@ -5,7 +5,7 @@
 \alias{print.describe}
 \title{Descriptive statistics}
 \usage{
-describe(data, by, detailed = FALSE, ...)
+describe(data, by, detailed = FALSE, probs = seq(0, 1, 0.25), ...)
 
 \method{print}{describe}(x, digits = getOption("digits"), ...)
 }

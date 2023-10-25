@@ -21,7 +21,7 @@
 #' 
 #' @export
 
-describe <- function(data, by, detailed = FALSE, ...)
+describe <- function(data, by, detailed = FALSE, probs = seq(0, 1, 0.25), ...)
 {
   data_name <- deparse(substitute(data))
   if(!isa(data, "data.frame"))
@@ -109,7 +109,7 @@ describe <- function(data, by, detailed = FALSE, ...)
                  "NAs" = n.miss, 
                  "Mean" = mean(x), 
                  "StdDev" = sd(x), 
-                 quantile(x, probs = c(0.025, 0.25, 0.5, 0.75, 0.975))) 
+                 quantile(x, probs = probs)) 
                  # skewness(x), kurtosis(x)
         # names(out)[1:4] <- c("Obs", "NAs", "Mean", "StdDev",
         #                 "Min", "Q1", "Median", "Q3", "Max",
