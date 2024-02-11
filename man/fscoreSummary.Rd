@@ -25,12 +25,14 @@ A vector containing the metrics.
 \description{
 Calculates information retrieval measures
 (Precision, Recall, F1, F2) for evaluating a two-class classifier 
-output quality.  
-This function can be used in \code{\link[caret]{train}()} function for 
-selecting the hyperparameter(s) of a classifier. This can be achieved by
-specifying the argument \code{metric} in \code{train()} function call, and
+output quality.
+
+This function can be used in \code{\link[caret]{train}()} for
+selecting the hyperparameter(s) of a classifier.  
+This can be achieved by specifying the argument \code{metric} in 
+\code{train()} function call, and the arguments
 \code{summaryFunction = fscoreSummary} and \code{classProbs = TRUE}
-in \code{\link[caret]{trainControl}}. 
+in \code{\link[caret]{trainControl}()}. 
 See examples below.
 }
 \examples{
@@ -84,5 +86,7 @@ plot(mod4)
 
 }
 \seealso{
-\code{\link[caret]{twoClassSummary}}, \code{\link{ceSummary}}
+\code{\link[caret]{twoClassSummary}},
+         \code{\link{mclassSummary}},
+         \code{\link{balAccSummary}}
 }

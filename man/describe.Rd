@@ -5,29 +5,21 @@
 \alias{print.describe}
 \title{Descriptive statistics}
 \usage{
-describe(data, by, detailed = FALSE, probs = seq(0, 1, 0.25), ...)
+describe(data, charts = TRUE, ...)
 
-\method{print}{describe}(x, digits = getOption("digits"), ...)
+\method{print}{describe}(x, ...)
 }
 \arguments{
 \item{data}{a matrix or a data.frame.}
 
-\item{by}{the name of a variable to condition on,}
-
-\item{detailed}{logical, if TRUE a detailed summary is returned.}
-
 \item{\dots}{additional arguments to be passed to the low level functions.}
-
-\item{x}{an object of class `describe`.}
-
-\item{digits}{significant digits.}
 }
 \description{
-Descriptive statistics for a matrix or data frame.
+Descriptive statistics of a data frame.
 }
 \examples{
 
-describe(iris, detailed = TRUE)
-describe(iris, by = Species)
+describe(iris)
+describe(dplyr::group_by(iris, Species))
 
 }

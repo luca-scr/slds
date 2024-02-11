@@ -1,7 +1,8 @@
 #' @name mclassSummary
 #' @aliases mclassSummary
 #' 
-#' @title Classification error, logLoss, and Brier score performance measures across resamples
+#' @title Classification error, logLoss, and Brier score performance
+#' measures across resamples
 #' 
 #' @description Calculates classification error, logLoss, and Brier score
 #' measures for evaluating a multi-class classifier output quality.  
@@ -26,6 +27,7 @@
 #' @seealso \code{\link[caret]{twoClassSummary}}, \code{\link{fscoreSummary}}
 #' 
 #' @examples
+#' \dontrun{
 #' data = mlbench::mlbench.waveform(300)
 #' data = data.frame(Class = data$classes, data$x)
 #' data$Class = paste0("Class", data$Class)
@@ -62,7 +64,7 @@
 #'   geom_errorbar(aes(ymin = with(mod2$results, BrierScore - BrierScoreSD/sqrt(10)),
 #'                     ymax = with(mod2$results, BrierScore + BrierScoreSD/sqrt(10))),
 #'                 width = 0.3)
-#' 
+#' }
 #' @importFrom ModelMetrics ce mlogLoss brier
 #' @export
 

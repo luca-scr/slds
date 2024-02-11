@@ -1,8 +1,8 @@
-core <- c("caret", "data.table", "ggplot2", "caretEnsemble", "gridExtra", 
-          "mlbench", "mclust", "ModelMetrics", "mgcv", "glmnet", 
-          "randomForest", "gbm", "klaR", "leaps", "rpart.plot", "visreg",
-          "GGally", "jpeg")
-
+core <- c("caret", "caretEnsemble", "data.table", "ggplot2", "scales", 
+          "patchwork", "mlbench", "mclust", "ModelMetrics", "mgcv", 
+          "glmnet", "randomForest", "gbm", "klaR", "leaps", "rpart.plot",
+          "visreg", "GGally", "jpeg")
+					
 # Attach the package from the same package library it was
 # loaded from before. https://github.com/tidyverse/tidyverse/issues/171
 same_library <- function(pkg) 

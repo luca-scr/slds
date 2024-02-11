@@ -5,12 +5,14 @@
 #' 
 #' @description Calculates information retrieval measures
 #' (Precision, Recall, F1, F2) for evaluating a two-class classifier 
-#' output quality.  
-#' This function can be used in \code{\link[caret]{train}()} function for 
-#' selecting the hyperparameter(s) of a classifier. This can be achieved by
-#' specifying the argument \code{metric} in \code{train()} function call, and
+#' output quality.
+#' 
+#' This function can be used in \code{\link[caret]{train}()} for
+#' selecting the hyperparameter(s) of a classifier.  
+#' This can be achieved by specifying the argument \code{metric} in 
+#' \code{train()} function call, and the arguments
 #' \code{summaryFunction = fscoreSummary} and \code{classProbs = TRUE}
-#' in \code{\link[caret]{trainControl}}. 
+#' in \code{\link[caret]{trainControl}()}. 
 #' See examples below.
 #'
 #' @param data	a data frame with columns \code{obs} and \code{pred} for the 
@@ -24,7 +26,9 @@
 #'
 #' @return A vector containing the metrics.
 #'
-#' @seealso \code{\link[caret]{twoClassSummary}}, \code{\link{ceSummary}}
+#' @seealso \code{\link[caret]{twoClassSummary}},
+#'          \code{\link{mclassSummary}},
+#'          \code{\link{balAccSummary}}
 #' 
 #' @examples
 #' data = caret::twoClassSim(200)
@@ -89,6 +93,14 @@ fscoreSummary <- function(data, lev = NULL, model = NULL, ...)
     stop("Levels of observed and predicted data do not match.", 
          call. = FALSE)
   
+  Prec <- try(ModelMetrics::precision(actual = ifelse(data$obs == lev[1], 1, 0),
+                                      predicted = data[, lev[1]], ...))
+  if(inherits(Prec, "try-error")) Prec <- NA
+  
+  Rec <- try(ModelMetrics::precision(actual = ifelse(data$obs == lev[1], 1, 0),
+                                     predicted = data[, lev[1]], ...))
+  if(inherits(Rec, "try-error")) Rec <- NA
+
   F1 <- try(ModelMetrics::fScore(actual = ifelse(data$obs == lev[1], 1, 0),
                                  predicted = data[, lev[1]], beta = 1, ...), 
             silent = TRUE)
@@ -99,10 +111,6 @@ fscoreSummary <- function(data, lev = NULL, model = NULL, ...)
             silent = TRUE)
   if(inherits(F2, "try-error")) F2 <- NA
   
-  c(Precision = ModelMetrics::precision(actual = ifelse(data$obs == lev[1], 1, 0),
-                                        predicted = data[, lev[1]], ...), 
-    Recall    = ModelMetrics::recall(actual = ifelse(data$obs == lev[1], 1, 0),
-                                     predicted = data[, lev[1]], ...),
-    F1        = F1,
-    F2        = F2)
+  out = c("Precision" = Prec, "Recall" = Rec, "F1" = F1, "F2" = F2)
+  return(out)
 }

@@ -4,11 +4,11 @@
 
 A meta-package for R accompanying the courses *Statistical Learning for Data Science* and *Statistical Methods for Data Science* at Università degli Studi di Perugia, Italy.
 
-## Installation
+## Install
 
 - Update **R** to the latest version available at https://cloud.r-project.org
 
-- Option 1: install using `devtools` package
+- Option 1 - install using `devtools` package:
 
     - Install/update `devtools` package to the latest version
 	  
@@ -22,7 +22,7 @@ A meta-package for R accompanying the courses *Statistical Learning for Data Sci
     devtools::install_github("luca-scr/slds")
     ```
 
-- Option 2: install using `remotes` package
+- Option 2 - install using `remotes` package:
 
     - Install/update `remotes` package to the latest version
 
@@ -36,3 +36,10 @@ A meta-package for R accompanying the courses *Statistical Learning for Data Sci
     remotes::install_github("luca-scr/slds")
     ```
 
+## Usage
+
+At each new R session just run the following command:
+
+```{r}
+library(slds)
+```

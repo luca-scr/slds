@@ -17,8 +17,6 @@
 #'
 #' @return The computed SSIM value.
 #'
-#' @examples
-#' 
 #' @export
 
 ssim <- function(x, y, L = 255)

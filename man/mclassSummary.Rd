@@ -2,7 +2,8 @@
 % Please edit documentation in R/mclassSummary.R
 \name{mclassSummary}
 \alias{mclassSummary}
-\title{Classification error, logLoss, and Brier score performance measures across resamples}
+\title{Classification error, logLoss, and Brier score performance
+measures across resamples}
 \usage{
 mclassSummary(data, lev = NULL, model = NULL, ...)
 }
@@ -33,6 +34,7 @@ with \code{classProbs = TRUE} in \code{\link[caret]{trainControl}}.
 See examples below.
 }
 \examples{
+\dontrun{
 data = mlbench::mlbench.waveform(300)
 data = data.frame(Class = data$classes, data$x)
 data$Class = paste0("Class", data$Class)
@@ -69,7 +71,7 @@ ggplot(mod2) +
   geom_errorbar(aes(ymin = with(mod2$results, BrierScore - BrierScoreSD/sqrt(10)),
                     ymax = with(mod2$results, BrierScore + BrierScoreSD/sqrt(10))),
                 width = 0.3)
-
+}
 }
 \seealso{
 \code{\link[caret]{twoClassSummary}}, \code{\link{fscoreSummary}}

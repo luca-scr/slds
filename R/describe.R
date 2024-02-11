@@ -3,186 +3,95 @@
 #' 
 #' @title Descriptive statistics
 #' 
-#' @description Descriptive statistics for a matrix or data frame.
+#' @description Descriptive statistics of a data frame.
 #' 
 #' @param data a matrix or a data.frame.
-#' @param by the name of a variable to condition on,
-#' @param detailed logical, if TRUE a detailed summary is returned.
-#' @param digits significant digits.
-#' @param x an object of class `describe`.
 #' @param \dots additional arguments to be passed to the low level functions.
 #'
 #' @examples
 #' 
-#' describe(iris, detailed = TRUE)
-#' describe(iris, by = Species)
+#' describe(iris)
+#' describe(dplyr::group_by(iris, Species))
 #'
-#' @importFrom cli rule 
+#' @importFrom skimr skim_with
 #' 
 #' @export
 
-describe <- function(data, by, detailed = FALSE, probs = seq(0, 1, 0.25), ...)
+describe <- function(data, charts = TRUE, ...)
 {
-  data_name <- deparse(substitute(data))
-  if(!isa(data, "data.frame"))
-  {
-    vars_name <- if(is.vector(data)) data_name else colnames(data)
-    data <- as.data.frame(data)
-    if(!is.null(vars_name))
-      colnames(data) <- vars_name
-  }
-  vars_name <- colnames(data)
-
-  if(!missing(by))
-  {
-    by_name <- deparse(substitute(by))
-    #
-    if(!is.null(data[[by_name]]))
-    {
-      by <- as.factor(data[[by_name]])
-    } else
-    if(exists(by_name))
-    {
-      by <- as.factor(by)
-    } else
-    {
-      stop(by_name, "not available in data.frame", data_name,
-           "or object not found")
-    }
-    #
-    x <- split(data[setdiff(vars_name, by_name)], by)
-    out <- vector("list", length = nlevels(by))
-    # browser()
-    for(i in seq(nlevels(by)))
-    {
-      out[[i]] <- describe(x[[i]], detailed = detailed)
-      names(out[[i]]$describe) <- setdiff(vars_name, by_name)
-    }
-    names(out) <- levels(by)
-    out$by <- by_name
-    class(out) <- c("describe")
-    return(out)
-  }
-
-  # skewness <- function(x) mean((x - mean(x))^3)/sd(x)^3
-  # kurtosis <- function(x) mean((x - mean(x))^4)/sd(x)^4 - 3
-
-  nvar <- length(vars_name)
-  obj <- vector(mode="list", length=nvar)
-  # names(obj) <- if(nvar > 1) vars_name else data_name
-  names(obj) <- vars_name
-  type <- rep(NA, nvar)
-
-  opt.warn <- options("warn")  # save default warning option
-  options(warn=-1)             # and suppress warnings
-  for(j in seq(nvar))
-  {
-    x <- data[,j]
-    if(is.factor(x) | typeof(x) == "character" | typeof(x) == "logical")
-    {
-      type[j] <- "factor"
-      if(detailed)
-      {
-        out <- summary(as.factor(x))
-        out <- cbind("Count" = out, 
-                     "Percent" = out/sum(out)*100)
-      } else
-      {
-        out <- summary(as.factor(x))
-      }
-      obj[[j]] <- out
-    }
-    else if(any(class(x) == "POSIXt"))
-    {
-      type[j] <- "numeric"
-      out <- summary(x)
-      obj[[j]] <- out
-    }
-    else
-    {
-      type[j] <- "numeric"
-      n.miss <- sum(is.na(x))
-      x <- na.omit(x)
-      if(detailed)
-      {
-        out <- c("Obs" = length(x), 
-                 "NAs" = n.miss, 
-                 "Mean" = mean(x), 
-                 "StdDev" = sd(x), 
-                 quantile(x, probs = probs)) 
-                 # skewness(x), kurtosis(x)
-        # names(out)[1:4] <- c("Obs", "NAs", "Mean", "StdDev",
-        #                 "Min", "Q1", "Median", "Q3", "Max",
-        #                 "Skewness", "Kurtosis")
-      } else
-      {
-        out <- c("Obs" = length(x), 
-                 "Mean" = mean(x), 
-                 "StdDev" = sd(x), 
-                 "Min" = min(x), 
-                 "Median" = median(x), 
-                 "Max" = max(x))
-        # names(out) <- c("Obs", "Mean", "StdDev", "Min", "Median", "Max")
-      }
-      obj[[j]] <- out
-    }
-  }
-  obj <- list(name = data_name, describe = obj, type = type)
-  class(obj) <- "describe"
-  options(warn=opt.warn$warn)
-  return(obj)
+  requireNamespace("skimr")
+  skimr_describe <- skimr::skim_with(
+    "base" = skimr::sfl(n_complete = skimr::n_complete, 
+                        n_missing = skimr::n_missing),
+    "character" = skimr::sfl(n_unique = skimr::n_unique, 
+                             top_chars = ~ top_chars(.)),
+    "factor" = { l <- skimr::sfl(ordered = ~ is.ordered(.), 
+                                 top_freqs = ~ top_freqs(.))
+                 if(charts) 
+                   l[["funs"]]$barchart = ~ inline_barchart(.)
+                 l 
+               },    
+    "numeric" = { l <- skimr::sfl(mean, sd, min, 
+                                  p25 = ~ quantile(., 0.25, na.rm = TRUE),
+                                  p50 = ~ quantile(., 0.50, na.rm = TRUE),
+                                  p75 = ~ quantile(., 0.75, na.rm = TRUE),
+                                  max)
+                  if(charts) 
+                    l[["funs"]]$hist = ~ skimr::inline_hist(.)
+                  l 
+                },    
+    append = FALSE)
+  
+  d <- skimr_describe(data)
+  class(d) <- append("describe", class(d))
+  return(d)
 }
 
 #' @rdname describe
-#' @export
+#' @exportS3Method print describe
+#' @export print.describe
 
-print.describe <- function(x, digits = getOption("digits"), ...)
+print.describe <- function(x, ...)
 {
+  # requireNamespace("skimr")
+  skimr:::print.skim_df(x, include_summary = FALSE, ...)
+}
+  
+#-----------------------------------------------------------------------
 
-  if(!is.null(x$by))
+top_freqs <- function(x, min_char = 5, max_levels = 5) 
+{
+  freqs <- round(prop.table(table(x, useNA = "no")), 4)
+  top <- freqs[sort(order(freqs, decreasing = TRUE)[1:max_levels])]
+  top_names <- abbreviate(names(top), minlength = min_char)
+  out <- paste0(top_names, ": ", top, collapse = " |")
+  if(length(freqs) > length(top)) 
+    out <- paste0(out, " |", intToUtf8(8230))
+  out
+}
+
+top_chars <- function(x, min_char = 5, max_levels = 5) 
+{
+  counts <- skimr::sorted_count(x)
+  top <- if(length(counts) > max_levels)
+           counts[seq_len(max_levels)] else counts
+  top_names <- abbreviate(names(top), minlength = min_char)
+  paste0(top_names, collapse = " | ")
+}
+
+inline_barchart <- function(x, max_levels = 8) 
+{
+  if(any(is.infinite(x))) 
   {
-    by <- which(sapply(x, class) == "describe")
-    for(i in by)
-    {
-      cat(cli::rule(left = paste(x$by, "=", names(x)[i]),
-                    width = getOption("width")), "\n")
-      print(x[[i]])
-      if(i < length(by)) cat("\n")
-    }
-    return(invisible())
+    x[is.infinite(x)] <- NA
+    warning("Variable contains Inf or -Inf value(s) that were converted to NA.")
   }
-
-  descr <- x$describe
-  isNum <- (x$type == "numeric")
-
-  if(sum(isNum) > 0)
-  {
-    out1 <- do.call("rbind",descr[isNum])
-    print(zapsmall(out1, digits = digits))
-  }
-
-  if(sum(!isNum) > 0)
-  {
-    if(sum(isNum) > 0) cat("\n")
-    out2 <- descr[!isNum]
-    for(j in seq(out2))
-    {
-      if(is.vector(out2[[j]]))
-      {
-        out2[[j]] <- do.call("rbind", out2[j])
-        print(zapsmall(out2[[j]], digits = digits))
-      } else
-      {
-        # names(dimnames(out2[[j]])) <- c(names(out2)[j], "\b")
-        # print(zapsmall(out2[[j]], digits = digits))
-        outj <- zapsmall(as.data.frame(out2[[j]]), digits = digits)
-        outj <- cbind(rownames(outj), outj)
-        colnames(outj) <- c(names(out2)[j], colnames(outj)[-1])
-        print(outj, row.names = FALSE)
-      }
-    if(j < length(out2)) cat("\n")
-    }
-  }
-
-  invisible()
+  if(length(x) < 1 || all(is.na(x))) return(" ")
+  freqs <- prop.table(table(x, useNA = "no"))
+  tab <- freqs/max(freqs)
+  tab <- tab[sort(order(tab, decreasing = TRUE)[1:max_levels])]
+  out <- skimr:::spark_bar(tab)
+  if(length(freqs) > length(tab)) 
+    out <- paste0(out, intToUtf8(8230))
+  out
 }
