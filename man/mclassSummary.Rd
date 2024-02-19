@@ -2,8 +2,8 @@
 % Please edit documentation in R/mclassSummary.R
 \name{mclassSummary}
 \alias{mclassSummary}
-\title{Classification error, logLoss, and Brier score performance
-measures across resamples}
+\title{Classification error, cross-entropy (or logLoss), and Brier 
+score performance measures across resamples}
 \usage{
 mclassSummary(data, lev = NULL, model = NULL, ...)
 }
@@ -24,8 +24,8 @@ See the \code{classProbs} argument to \code{\link[caret]{trainControl}}.}
 A vector containing the metrics.
 }
 \description{
-Calculates classification error, logLoss, and Brier score
-measures for evaluating a multi-class classifier output quality.  
+Calculates classification error, cross-entropy, and 
+Brier score measures for evaluating a multi-class classifier output quality.  
 This function can be used in \code{\link[caret]{train}()} function for 
 selecting the hyperparameter(s) of a classifier. This can be achieved by
 specifying the argument \code{metric} with \code{maximize = FALSE} in
@@ -43,7 +43,7 @@ describe(data)
 mod1 = train(Class ~ . , data = data,
              method = "rpart2",
              tuneGrid = expand.grid(maxdepth = 1:10),
-             metric = "logLoss",
+             metric = "CrossEntropy",
              maximize = FALSE,
              trControl = trainControl(method = "cv", number = 10,
                                       classProbs = TRUE,
@@ -52,8 +52,8 @@ mod1 = train(Class ~ . , data = data,
 mod1
 ggplot(mod1) +
   scale_x_continuous(breaks = mod1$results$maxdepth) +
-  geom_errorbar(aes(ymin = with(mod1$results, logLoss - logLossSD/sqrt(10)),
-                    ymax = with(mod1$results, logLoss + logLossSD/sqrt(10))),
+  geom_errorbar(aes(ymin = with(mod1$results, CrossEntropy - CrossEntropySD/sqrt(10)),
+                    ymax = with(mod1$results, CrossEntropy + CrossEntropySD/sqrt(10))),
                 width = 0.3)
                 
 mod2 = train(Class ~ . , data = data,
