@@ -4,12 +4,14 @@
 \alias{prcompRecon}
 \title{Principal components data reconstruction}
 \usage{
-prcompRecon(object, npcs = 2, ...)
+prcompRecon(object, npcs = 2, pcs = NULL, ...)
 }
 \arguments{
-\item{object}{an object returned by 'prcomp' function.}
+\item{object}{an object returned by `prcomp()` function.}
 
-\item{npcs}{the number of principal componets to use in the reconstruction}
+\item{npcs}{the number of principal components to use in data reconstruction}
+
+\item{pcs}{specify which principal components to use in data reconstruction. If provided it takes precedence over `npcs`}
 
 \item{\dots}{additional arguments to be passed to the low level functions.}
 }
@@ -25,6 +27,8 @@ principal components.
 pairs(iris[,1:4], gap = 0)
 PCA = prcomp(iris[,1:4])
 X = prcompRecon(PCA, 2)
+pairs(X, gap = 0)
+X = prcompRecon(PCA, pcs = c(1,4))
 pairs(X, gap = 0)
 
 }

@@ -6,8 +6,9 @@
 #' @description Return the data matrix reconstructed using a subset of 
 #' principal components.
 #' 
-#' @param object an object returned by 'prcomp' function. 
-#' @param npcs the number of principal componets to use in the reconstruction
+#' @param object an object returned by `prcomp()` function. 
+#' @param npcs the number of principal components to use in data reconstruction
+#' @param pcs specify which principal components to use in data reconstruction. If provided it takes precedence over `npcs`
 #' @param \dots additional arguments to be passed to the low level functions.
 #' 
 #' @return The reconstructed data matrix. 
@@ -18,17 +19,21 @@
 #' PCA = prcomp(iris[,1:4])
 #' X = prcompRecon(PCA, 2)
 #' pairs(X, gap = 0)
+#' X = prcompRecon(PCA, pcs = c(1,4))
+#' pairs(X, gap = 0)
 #' 
 #' @rdname prcompRecon
 #' @export
 
-prcompRecon <- function(object, npcs = 2, ...)
+prcompRecon <- function(object, npcs = 2, pcs = NULL, ...)
 {
   stopifnot(inherits(object, "prcomp"))
-	npcs <- min(as.integer(npcs),
-	            sum(object$sdev > sqrt(.Machine$double.eps)))
-  Z <- object$x[,seq(npcs),drop=FALSE]
-  V <- object$rotation[,seq(npcs),drop=FALSE]
+  
+  inc <- which(object$sdev > sqrt(.Machine$double.eps))
+  pcs <- if(!is.null(pcs)) as.numeric(pcs) else as.numeric(1:npcs)
+  pcs <- intersect(pcs, inc)
+  Z <- object$x[,pcs,drop=FALSE]
+  V <- object$rotation[,pcs,drop=FALSE]
   x <- Z %*% t(V)
   if(is.numeric(object$scale))
     x <- scale(x, center = FALSE, scale = 1/object$scale)
@@ -46,18 +51,16 @@ prcompRecon <- function(object, npcs = 2, ...)
 #' principal components.
 #' 
 #' @param object an object returned by 'prcomp' function. 
-#' @param data the original data matrix
+#' @param data the original data matrix.
 #' @param \dots additional arguments to be passed to the low level functions.
 #' 
-#' @return A data frame containing the reconstruction error (RE), the mean
-#' square error (MSE), and the R^2 for increasing value of principal 
-#' components.
+#' @return A data frame containing the reconstruction error (RE), the root mean square error (RMSE), and the R^2 (Rsq) for sequential principal components (pc).
 #'
 #' @examples
 #' 
 #' PCA = prcomp(iris[,1:4])
-#' df = prcompReconError(PCA, iris[,1:4])
-#' zapsmall(df,5)
+#' tab = prcompReconError(PCA, iris[,1:4])
+#' zapsmall(tab,7)
 #' 
 #' @rdname prcompReconError
 #' @export
@@ -66,16 +69,17 @@ prcompReconError <- function(object, data, ...)
 {
   stopifnot(inherits(object, "prcomp"))
   data <- as.matrix(data)
-	npcs <- length(object$sdev)
+  pcs <- which(object$sdev > sqrt(.Machine$double.eps))
+	npcs <- length(pcs)
 	RE <- rep(as.double(NA), npcs)
 	for(q in 1:npcs)
 	{
     RE[q] <- sum((data - prcompRecon(object, npcs = q))^2)
 	}
-	MSE <- RE/prod(dim(data))
+	RMSE <- sqrt(RE/prod(dim(data)))
 	Rsq <- 1 - RE/sum(scale(data, center = object$center, scale = FALSE)^2)
 
-	out <- data.frame(npc = 1:npcs, RE = RE, MSE = MSE, Rsq = Rsq)
+	out <- data.frame(pc = pcs, RE = RE, RMSE = RMSE, Rsq = Rsq)
   return(out)
 }
 

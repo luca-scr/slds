@@ -9,14 +9,12 @@ prcompReconError(object, data, ...)
 \arguments{
 \item{object}{an object returned by 'prcomp' function.}
 
-\item{data}{the original data matrix}
+\item{data}{the original data matrix.}
 
 \item{\dots}{additional arguments to be passed to the low level functions.}
 }
 \value{
-A data frame containing the reconstruction error (RE), the mean
-square error (MSE), and the R^2 for increasing value of principal 
-components.
+A data frame containing the reconstruction error (RE), the root mean square error (RMSE), and the R^2 (Rsq) for sequential principal components (pc).
 }
 \description{
 Return the squared reconstruction error from using a subset of 
@@ -25,7 +23,7 @@ principal components.
 \examples{
 
 PCA = prcomp(iris[,1:4])
-df = prcompReconError(PCA, iris[,1:4])
-zapsmall(df,5)
+tab = prcompReconError(PCA, iris[,1:4])
+zapsmall(tab,7)
 
 }
